@@ -8,15 +8,10 @@ import org.apache.http.client.methods.*;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
@@ -40,6 +35,8 @@ import java.util.stream.Stream;
  *
  */
 @RestController
+//@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:4200")
 public class ProxyController {
 
 	@RequestMapping("/")
@@ -72,7 +69,7 @@ public class ProxyController {
                     return ResponseEntity.badRequest().build();
             }
             HttpHeaders responseHeaders = new HttpHeaders();
-            responseHeaders.add("Access-Control-Allow-Origin", "*");
+            //responseHeaders.add("Access-Control-Allow-Origin", "http://jsonplaceholder.typicode.com/posts");
             Stream.of(response.getAllHeaders())
                     .forEach(header -> responseHeaders.add(header.getName(), header.getValue()));
             String responseBody = getResponseBody(response);
@@ -123,8 +120,10 @@ public class ProxyController {
         StringBuffer result = new StringBuffer();
         byte[] buf = new byte[1024];
         BufferedInputStream input = new BufferedInputStream(entity.getContent());
-        while(input.read(buf) > 0) {
-            result.append(new String(buf));
+        int len = 0;
+        while(input.available() > 0) {
+            len = input.read(buf);
+            result.append(new String(buf, 0, len));
         }
         input.close();
         return result.toString();
